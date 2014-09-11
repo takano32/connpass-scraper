@@ -14,7 +14,7 @@ class Connpass::Scraper
 
   def initialize(event_id)
     @event_id = event_id
-    url = "http://pyconjp.connpass.com/event/#{@event_id}/participation/"
+    url = "http://connpass.com/event/#{@event_id}/participation/"
     @doc = Nokogiri::HTML(open url)
     @users = []
   end
