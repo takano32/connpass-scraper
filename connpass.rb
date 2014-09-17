@@ -24,7 +24,8 @@ class Connpass::Scraper
     @doc.xpath('//tbody/tr').each do |conpass|
       conpass.css('td.user').each do |connpass_user|
         user = {}
-        if Connpass::CONNPASS_REGEXP =~ connpass_user.css('p.display_name a').first[:href] then
+        connpass_link = connpass_user.css('p.display_name a').first
+        if connpass_link and Connpass::CONNPASS_REGEXP =~ connpass_link[:href] then
           user[:connpass] = $1
         end
         conpass.css('td.social').each do |socials|
