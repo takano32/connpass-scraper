@@ -3,13 +3,35 @@ require 'open-uri'
 
 
 module Connpass
-  CONNPASS_REGEXP = %r!http://connpass\.com/user/([^/]*)/!
-  TWITTER_REGEXP = %r!https://twitter\.com/[^?]*\?screen_name=(.*)!
-  FACEBOOK_REGEXP = %r!https://www\.facebook\.com/(.*)!
-  GITHUB_REGEXP = %r!https://github\.com/(.*)!
+  module Scraper
+    CONNPASS_REGEXP = %r!http://connpass\.com/user/([^/]*)/!
+    TWITTER_REGEXP = %r!https://twitter\.com/[^?]*\?screen_name=(.*)!
+    FACEBOOK_REGEXP = %r!https://www\.facebook\.com/(.*)!
+    GITHUB_REGEXP = %r!https://github\.com/(.*)!
+  end
 end
 
-class Connpass::Scraper
+class Connpass::Scraper::Series
+  attr_reader :event_ids
+
+  def initialize(series_id)
+    @event_ids = []
+    @series_id = series_id
+    url = "http://connpass.com/series/#{series_id}"
+    @doc = Nokogiri::HTML(open url)
+  end
+
+  def scrape
+    @event_ids = []
+    @doc.css('a.url').each do |link|
+      if link[:href] =~ %r!http://([a-z]*\.)?connpass.com/event/([0-9]+)/! then
+        @event_ids << $2.to_i
+      end
+    end
+  end
+end
+
+class Connpass::Scraper::Event
   attr_reader :users
 
   def initialize(event_id)
@@ -25,19 +47,19 @@ class Connpass::Scraper
       conpass.css('td.user').each do |connpass_user|
         user = {}
         connpass_link = connpass_user.css('p.display_name a').first
-        if connpass_link and Connpass::CONNPASS_REGEXP =~ connpass_link[:href] then
+        if connpass_link and Connpass::Scraper::CONNPASS_REGEXP =~ connpass_link[:href] then
           user[:connpass] = $1
         end
         conpass.css('td.social').each do |socials|
           socials.children.each do |social|
             social_url = social[:href]
-            if Connpass::TWITTER_REGEXP =~ social_url then
+            if Connpass::Scraper::TWITTER_REGEXP =~ social_url then
               user[:twitter] = $1
             end
-            if Connpass::FACEBOOK_REGEXP =~ social_url then
+            if Connpass::Scraper::FACEBOOK_REGEXP =~ social_url then
               user[:facebook] = $1
             end
-            if Connpass::GITHUB_REGEXP =~ social_url then
+            if Connpass::Scraper::GITHUB_REGEXP =~ social_url then
               user[:github] = $1
             end
           end
@@ -47,4 +69,5 @@ class Connpass::Scraper
     end
   end
 end
+
 

@@ -2,7 +2,7 @@
 
 require_relative './connpass'
 
-s = Connpass::Scraper.new(6300)
+s = Connpass::Scraper::Event.new(6300)
 s.scrape
 users = s.users
 
