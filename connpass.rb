@@ -18,13 +18,16 @@ class Connpass::Scraper::Series
     @event_ids = []
     @series_id = series_id
     url = "http://connpass.com/series/#{series_id}"
+    if series_id.is_a? String then
+      url = "http://#{series_id}.connpass.com/"
+    end
     @doc = Nokogiri::HTML(open url)
   end
 
   def scrape
     @event_ids = []
     @doc.css('a.url').each do |link|
-      if link[:href] =~ %r!http://([a-z]*\.)?connpass.com/event/([0-9]+)/! then
+      if link[:href] =~ %r!http://([0-9a-z]*\.)?connpass.com/event/([0-9]+)/?! then
         @event_ids << $2.to_i
       end
     end
@@ -74,5 +77,4 @@ class Connpass::Scraper::Event
     end
   end
 end
-
 
