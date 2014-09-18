@@ -37,11 +37,16 @@ class Connpass::Scraper::Event
   def initialize(event_id)
     @event_id = event_id
     url = "http://connpass.com/event/#{@event_id}/participation/"
-    @doc = Nokogiri::HTML(open url)
+    begin
+      @doc = Nokogiri::HTML(open url)
+    rescue OpenURI::HTTPError => e
+      @doc = nil if e.message == '404 NOT FOUND'
+    end
     @users = []
   end
 
   def scrape
+    return if @doc.nil?
     @users = []
     @doc.xpath('//tbody/tr').each do |conpass|
       conpass.css('td.user').each do |connpass_user|

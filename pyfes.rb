@@ -16,7 +16,7 @@ end.uniq
 
 users.each do |user|
   if id = user[:twitter] then
-    puts "Twitter: #{id}"
+    puts id
   end
 end
 
